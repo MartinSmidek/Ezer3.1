@@ -292,30 +292,35 @@ function doc_called() { trace();
 # seznam Ezer modulů s informací o aktuálnost
 # musí dát stejné seznam jako comp2:comp_ezer_list
 function doc_ezer_list() { trace();
-  global $ezer_path_appl, $ezer_path_code, $ezer_ezer;
+  global $ezer_version, $ezer_path_root, $dbg_info, $ezer_ezer; 
 //  $TEST= 'tut.cmp';
-  // projití složky aplikace
+  // projití složek aplikace
   $files= array();
-  if (($dh= opendir($ezer_path_appl))) {
-    while (($file= readdir($dh)) !== false) {
-      if ( substr($file,-5)==='.ezer' ) {
-        $name= substr($file,0,strlen($file)-5);
-        if (isset($TEST) && $TEST!==$name) continue;
-        $etime= filemtime("$ezer_path_appl/$name.ezer");
-        $ctime= @filemtime($cname= "$ezer_path_code/$name.json");
-        $files[$name]= (object)array();
-        if ( !$ctime)
-          $files[$name]->state= 'err';
-        else
-          $files[$name]->state= !$ctime || $ctime<$etime /*|| $ctime<$xtime*/ ? "old" : "ok";
-        // získání informace z překladu
-        if ( $files[$name]->state=='ok' ) {
-          $code= json_decode(file_get_contents($cname));
-          $files[$name]->info= $code->info;
+  foreach ($dbg_info->src_path as $root) {
+    $path_appl= "$ezer_path_root/$root";
+    $path_code= "$ezer_path_root/$root/code$ezer_version";
+    if (($dh= opendir($path_appl))) {
+      while (($file= readdir($dh)) !== false) {
+        if ( substr($file,-5)==='.ezer' ) {
+          $name= substr($file,0,strlen($file)-5);
+          if (isset($TEST) && $TEST!==$name) continue;
+          $etime= filemtime("$path_appl/$name.ezer");
+          $cname= "$path_code/$name.json";
+          $ctime= file_exists($cname) ? filemtime($cname) : '';
+          $files[$name]= (object)array();
+          if ( !$ctime)
+            $files[$name]->state= 'err';
+          else
+            $files[$name]->state= !$ctime || $ctime<$etime /*|| $ctime<$xtime*/ ? "old" : "ok";
+          // získání informace z překladu
+          if ( $files[$name]->state=='ok' ) {
+            $code= json_decode(file_get_contents($cname));
+            $files[$name]->info= $code->info;
+          }
         }
       }
+      closedir($dh);
     }
-    closedir($dh);
   }
   // přidání případných modulů z jiné složky
   if (!isset($TEST)) {

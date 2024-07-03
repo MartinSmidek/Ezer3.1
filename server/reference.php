@@ -1511,7 +1511,7 @@ function sys_track_show($abbr,$day,$hour=-1) {
         $nazev= select("'&nbsp;'",$tab,"id_$tab='$id'"); 
         break;
     }
-    $style= $nazev ? '' : "style='color:red'";
+    $style= $nazev ? '' : "style='color:red;background:yellow'";
     $html= "<a $style href='ezer://syst.dat.tab_id_show/$tab/$id'>".strtoupper($tab[0]).$id."</a> "
         . "<b>$nazev</b> ";
     return $html;

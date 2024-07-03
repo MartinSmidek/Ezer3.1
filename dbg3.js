@@ -1,5 +1,7 @@
-/* global dbg, doc, Cookie, Ezer, dbg_onclick_start, app_ezer */
-
+/* global dbg, doc, Cookie, Ezer, dbg_onclick_start, app_ezer, 
+          CodeMirror, define,
+          editor, php_editor, wphp, lines, wcg, help, pick */
+"use strict";
 // (c) 2020 Martin Smidek <martin@smidek.eu>
 
 // ================================================================================> DEBUGGER REMOTE
@@ -10,7 +12,7 @@ var mode='ezer',  // ezer|ezer_edit|php|php_edit
     // stav zobrazeného ezer
     ezer= {
       path: ''        // absolutní cesta k souboru 
-    }
+    },
     // stav zobrazeného PHP
     php= {
       fce: '',        // zobrazená/editovaná funkce
@@ -630,7 +632,7 @@ function dbg_find_block(name,l,c) {
     }
   }
   // --------------------------------- lc inside b
-  lc_inside= function(b) { 
+  var lc_inside= function(b) { 
     let ok= false,
         _lc= b.desc._lc, 
         lc_= b.desc.lc_;
@@ -699,7 +701,7 @@ function dbg_find_block(name,l,c) {
 jQuery.fn.extend({
   // ------------------------------------------------- + scrollIntoViewIfNeeded
   scrollIntoViewIfNeeded: function() {
-    elem= this[0];
+    let elem= this[0];
     var rect= elem.getBoundingClientRect();
     if (rect.bottom > window.innerHeight) {
       elem.scrollIntoView(false);
@@ -1002,7 +1004,7 @@ function dbg_show_text(ln,cg=null) {
   // vytvoř text
   dbg.src= [];
   dbg.not= [];
-  for (i= 0; i<ln.length; i++) {
+  for (let i= 0; i<ln.length; i++) {
     var i1= i+1, lni= ln[i];
     lni= htmlentities(ln[i]);
     // detekce dokumentace
@@ -1101,12 +1103,12 @@ function substr_utf8_bytes(str, startInBytes, lengthInBytes) {
     // scan string forward to find index of first character
     // (convert start position in byte to start position in characters)
 
-    for (bytePos = 0; bytePos < startInBytes; startInChars++) {
+    for (let bytePos = 0; bytePos < startInBytes; startInChars++) {
 
         // get numeric code of character (is >= 128 for multibyte character)
         // and increase "bytePos" for each byte of the character sequence
 
-        ch = str.charCodeAt(startInChars);
+        let ch = str.charCodeAt(startInChars);
         bytePos += (ch < 128) ? 1 : encode_utf8(str[startInChars]).length;
     }
 
@@ -1116,12 +1118,12 @@ function substr_utf8_bytes(str, startInBytes, lengthInBytes) {
     // as we don't know the end position in chars yet, we start with a mix of
     // chars and bytes. we decrease "end" by the byte count of each selected 
     // character to end up in the right position
-    end = startInChars + lengthInBytes - 1;
+    let end = startInChars + lengthInBytes - 1;
 
-    for (n = startInChars; startInChars <= end; n++) {
+    for (let n = startInChars; startInChars <= end; n++) {
         // get numeric code of character (is >= 128 for multibyte character)
         // and decrease "end" for each byte of the character sequence
-        ch = str.charCodeAt(n);
+        let ch = str.charCodeAt(n);
         end -= (ch < 128) ? 1 : encode_utf8(str[n]).length;
 
         resultStr += str[n];
@@ -1208,14 +1210,15 @@ return 1;
 function dbg_context(el) {
   el= jQuery(el);
   var li= el.parent(),
-      ul= li.parent();
-  for (var i=1; i<dbg.src.length; i++) {
+      ul= li.parent(),
+      x= 0;
+  for (let i=1; i<dbg.src.length; i++) {
     if ( dbg.src[i][0]==li[0] ) {
       x= i;
       break;
     }
   }
-  return i;
+  return x;
 }
 // --------------------------------------------------------------------------------------- dbg touch
 // zobrazí informaci pod kurzorem
@@ -1409,7 +1412,7 @@ function dbg_make_tree(cg) {
 }
 // --------------------------------------------------------------------------------------- get caret
 function get_column(el) {
-  let clmn= 0;
+  let clmn= 0,
       el_p= el.parentElement,
       sel= window.getSelection(),
       node= el_p.tagName=='LI' ? sel.baseNode : el, // element nebo #text
