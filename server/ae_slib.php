@@ -358,11 +358,9 @@ function lorem_ipsum($repeat=1) {
 }
 # ------------------------------------------------------------------------------------------ display
 function display ($msg) {
-  global $trace;
-//   $msg= win2utf($msg);
-//   if ( $trace )
+  global $totrace, $trace;
+  if (strpos($totrace,'u')===false ) return '';
   $trace.= ($trace?"<br />":'').$msg;
-//   else $trace= $msg;
 }
 # ----------------------------------------------------------------------------------------- display_
 function display_ ($msg) {
@@ -373,7 +371,8 @@ function display_ ($msg) {
 # -------------------------------------------------------------------------------------------- trace
 # $note je poznámka uvedená za trasovací informací
 function trace($note='',$coding='') {
-  global $trace, $trace_parm;
+  global $totrace, $trace, $trace_parm;
+  if (strpos($totrace,'u')===false ) return '';
   $time= date("H:i:s");
   $act= debug_backtrace();
   $x= ($trace ? "<br/>" : '')."$time ".call_stack($act,1).($note?" / $note":'');
@@ -436,7 +435,8 @@ function call_stack($act,$n,$hloubka=2,$show_call=1) { #$this->debug($act,'call_
 # options:
 #   gettype=1 -- ve třetím sloupci bude gettype(hodnoty)
 function debug($gt,$label=false,$options=null) {
-  global $trace, $debug_level;
+  global $totrace, $trace, $debug_level;
+  if (strpos($totrace,'u')===false ) return '';
   $debug_level= 0;
   $html= ($options && isset($options->html)) ? $options->html : 0;
   $depth= ($options && isset($options->depth)) ? $options->depth : 64;
