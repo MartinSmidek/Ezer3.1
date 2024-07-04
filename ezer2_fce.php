@@ -730,7 +730,7 @@ function sys_watch_key() {
 # pokud ... tak vynechá uživatele, jejichž zkratky jsou v seznamu $EZER->activity->skip
 # $watch_access_opt je tabulka tabulek name, abbr, css mapujících access na hodnoty
 function sys_activity($k,$to_skip=0,$den=0,$_watch_access_opt='') {
-                                                                 debug($k,'sys_activity');
+//                                                                 debug($k,'sys_activity');
   global $ezer_root, $json, $user_options, $APLIKACE, $USER, $EZER, $watch_access_opt;
   $watch_access_opt= $_watch_access_opt;
   $user_options= $_SESSION[$ezer_root]['user_options'];
@@ -818,6 +818,12 @@ function sys_activity($k,$to_skip=0,$den=0,$_watch_access_opt='') {
     $html.= "<div class='karta'>Chybová hlášení $APLIKACE $day </div>";
     $html.= sys_day_errors($skip,$day_mysql);
     break;
+  case 'chyby triduum':
+    $day= date('j.n.Y',mktime(0,0,0,date("m"),date("d")-4,date("Y")));
+    $day_mysql= date('Y-m-d',mktime(0,0,0,date("m"),date("d")-4,date("Y")));
+    $html.= "<div class='karta'>Chybová hlášení $APLIKACE od $day </div>";
+    $html.= sys_day_errors($skip,$day_mysql,'>');
+    break;
   case 'chyby tyden':
     $day= date('j.n.Y',mktime(0,0,0,date("m"),date("d")-8,date("Y")));
     $day_mysql= date('Y-m-d',mktime(0,0,0,date("m"),date("d")-8,date("Y")));
@@ -860,6 +866,12 @@ function sys_activity($k,$to_skip=0,$den=0,$_watch_access_opt='') {
     $day_mysql= date('Y-m-d',mktime(0,0,0,date("m"),date("d")-1,date("Y")));
     $html.= "<div class='karta'>Přihlášení $APLIKACE $day </div>";
     $html.= sys_day_logins($skip,$day_mysql);
+    break;
+  case 'login triduum':
+    $day= date('j.n.Y',mktime(0,0,0,date("m"),date("d")-4,date("Y")));
+    $day_mysql= date('Y-m-d',mktime(0,0,0,date("m"),date("d")-4,date("Y")));
+    $html.= "<div class='karta'>Přihlášení $APLIKACE od $day </div>";
+    $html.= sys_day_logins($skip,$day_mysql,'>');
     break;
   case 'login tyden':
     $day= date('j.n.Y',mktime(0,0,0,date("m"),date("d")-8,date("Y")));
@@ -1285,7 +1297,7 @@ function sys_table($touch,$hours,$type,$color,$config_colors=false,$parm=null) {
     }
   }
   $colors[0]= '#e7e7e7';  // zarážka nakonec
-//                                                 debug($colors);
+//  debug($colors);                                                                        /*DEBUG*/
   // vykreslení tabulky
   if ( $hour_min <= $hour_max ) {
     $wt= '100%';
@@ -1297,7 +1309,7 @@ function sys_table($touch,$hours,$type,$color,$config_colors=false,$parm=null) {
     for ($h= 0; $h<=24; $h++) if ( $hours[$h] ) $tab.= "<th width='$wh'>$h</th>";
     $tab.= "</tr>";
     // uživatelé
-                                                 debug($touch,'$touch');
+//    debug($touch,'$touch');                                                              /*DEBUG*/
     foreach ( $touch as $user => $activity ) {
       $tab.= "<tr><td>$user</td>";
       for ($h= 0; $h<=24; $h++) { if ( $hours[$h] )  {
@@ -1330,13 +1342,13 @@ function sys_table($touch,$hours,$type,$color,$config_colors=false,$parm=null) {
               }
             }
             $title= $type=='speed' ? "" : "$tit, celkem $hit";
-            // <a $style $title href='ezer://ds.dum2.seek_order/$idx'>$idx</a></b>
-            if ($show_track) {
-              $abbr= strip_tags($user);
+            $abbr= strip_tags($user);
+            $zmena= sys_track_show($abbr,$day,$h,1) ? 'color:red;font-weight:bold' : '';
+            if ($show_track && $zmena) {
               $href= "href='ezer://$path.show_track/$abbr/$day/$h'";
-              $act= "<a $href style='color: black;text-decoration:none'>$act</a>";
+              $act= "<a $href style='text-decoration:none;$zmena'>$act</a>";
             }
-            $tab.= "<td $bg title='$title'>$act</td>";
+            $tab.= "<td $bg style='$zmena' title='$title'>$act</td>";
           }
           else
             $tab.= "<td></td>";
@@ -1421,13 +1433,14 @@ function sys_days_table($touch,$days,$type,$color,$config_colors=false,$parm=non
               }
             }
           }
-          if ($show_track) {
-            $abbr= strip_tags($user);
+          $abbr= strip_tags($user);
+          $zmena= sys_track_show($abbr,$h,-1,1) ? 'color:red;font-weight:bold' : '';
+          if ($show_track && $zmena) {
             $href= "href='ezer://$path.show_track/$abbr/$h/-1'";
-            $act= "<a $href style='color: black;text-decoration:none'>$act</a>";
+            $act= "<a $href style='text-decoration:none;$zmena'>$act</a>";
           }
           $title= $type=='speed' ? "" : "$tit, celkem $hit";
-          $tab.= "<td $bg title='$title'>$act</td>";
+          $tab.= "<td $bg style='$zmena' title='$title'>$act</td>";
         }
         else
           $tab.= "<td></td>";

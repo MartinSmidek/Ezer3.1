@@ -1219,7 +1219,7 @@ function sql_date_year ($datum,$user2sql=0,$del='.') {
 }
 # ----------------------------------------------------------------------------------------- sql date
 // datum
-function sql_date ($datum,$user2sql=0) {
+function sql_date ($datum,$user2sql=0,$del='.') {
   if ( $user2sql ) {
     // převeď uživatelskou podobu na sql tvar
     $text= '0000-00-00';
@@ -1242,7 +1242,7 @@ function sql_date ($datum,$user2sql=0) {
       $t= mktime(0,0,1,$m,$d,$y)+1;
 //                                                 display("$datum:$m,$d,$y:$text:$t");
       $text= $dny[date('w',$t)];
-      $text.= " $d.$m.$y";
+      $text.= " $d{$del}$m{$del}$y";
     }
   }
   return $text;

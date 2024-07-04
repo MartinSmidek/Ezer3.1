@@ -1479,7 +1479,8 @@ function sys_db_rec_show($tab,$key,$idt) {
 # ukáže v přehledném tvaru změny ve sledovaných tabulkách podle zápisů v _track
 # procedené zadaným uživatelem v v danémm dnu, případně hodině (-1 značí celý den)
 # výpis je optimalizovaný pro datový model ezer_db2 ale použitelný obecně pro databáze ezer_
-function sys_track_show($abbr,$day,$hour=-1) {
+function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
+  $jsou_zmeny= 0;
   $html_ops= function($attrs) {
     $prefix= '';
     foreach (array_keys($attrs) as $atr) {
@@ -1536,6 +1537,7 @@ function sys_track_show($abbr,$day,$hour=-1) {
       . "FROM _track WHERE kdo='$abbr' AND $time_cond ORDER BY kdy"); // od dávných k novým změnám
   while ( $rt && list($kdy,$tab,$id,$fld,$op,$old,$val)= pdo_fetch_array($rt) ) {
     if (!isset($t->$tab[$id])) $t->$tab[$id]= [];
+    if ($test_only) { $jsou_zmeny= 1; goto end; }
     $t->$tab[$id][$fld]= ['kdy'=>$kdy,'val'=>$val,'op'=>$op,'old'=>$old]; 
     // zapiš vlastnosti měněných atributů entit
     if ($tab=='osoba')  {
@@ -1580,7 +1582,7 @@ function sys_track_show($abbr,$day,$hour=-1) {
     if ($tab=='akce')   $A[$id][$fld]= $val;
   }
   $all_O= implode(',',array_keys($O)); if (!$all_O) $all_O= '0';
-//  display("all_O=$all_O"); debug($O,'O'); debug($P,'P'); debug($R,'R'); debug($A,'A'); 
+//  display("all_O=$all_O"); debug($O,'O'); debug($P,'P'); debug($R,'R'); debug($A,'A');   /*DEBUG*/
   
   // uděláme tranzitivní obal
   $continue= true;
@@ -1637,30 +1639,30 @@ function sys_track_show($abbr,$day,$hour=-1) {
   }
   
   // doplnění A podle P
-  debug($A,'A 2'); debug($P,'P 2'); debug($R,'R 2'); debug($O,'O 2'); 
-  debug($AP,'AP 2'); debug($PR,'PR 2'); debug($PO,'PO 2'); debug($RO,'RO 2'); 
+//  debug($A,'A 2'); debug($P,'P 2'); debug($R,'R 2'); debug($O,'O 2');                    /*DEBUG*/
+//  debug($AP,'AP 2'); debug($PR,'PR 2'); debug($PO,'PO 2'); debug($RO,'RO 2');            /*DEBUG*/
   // zobrazení 
   $html.= '';
   foreach (array_keys($A) as $ida) {
     $akce= $html_nazev('akce',$ida); 
-    $html.= "<br>1 $akce";    
+    $html.= "<br> $akce";    
     $html.= $html_attrs($A[$ida]);
     // projdeme akce a jejich pobyty
     foreach ($AP[$ida] as $idp) {
       $ops= $html_ops($P[$idp]); 
       $pobyt= $html_nazev('pobyt',$idp); 
-      $html.= "<br>2 . &nbsp; $ops $pobyt";
+      $html.= "<br> . &nbsp; $ops $pobyt";
       $html.= $html_attrs($P[$idp]);
       // projdeme napřed rodinu tohoto pobytu
       if (($idr= $PR[$idp])) {
         $ops= $html_ops($R[$idr]); 
         $rodina= $html_nazev('rodina',$idr); 
-        $html.= "<br>3 . &nbsp; . &nbsp; $ops $rodina";
+        $html.= "<br> . &nbsp; . &nbsp; $ops $rodina";
         $html.= $html_attrs($R[$idr]);
         foreach ($RO[$idr] as $ido) {
           $ops= $html_ops($O[$ido]); 
           $osoba= $html_nazev('osoba',$ido); 
-          $html.= "<br>4 . &nbsp; . &nbsp; . &nbsp; $ops $osoba";
+          $html.= "<br> . &nbsp; . &nbsp; . &nbsp; $ops $osoba";
           $html.= $html_attrs($O[$ido]);
           $html.= $html_attrs($Or[$ido]);
           $html.= $html_attrs($Op[$ido]);
@@ -1676,7 +1678,7 @@ function sys_track_show($abbr,$day,$hour=-1) {
         $ops_o= $html_ops($O[$ido]); 
         $osoba= $html_nazev('osoba',$ido); 
         $spolu= $html_nazev('spolu',$ids); 
-        $html.= "<br>5 . &nbsp; . &nbsp; $ops_s $spolu $ops_o $osoba";
+        $html.= "<br> . &nbsp; . &nbsp; $ops_s $spolu $ops_o $osoba";
         $html.= $html_attrs($O[$ido]);
         $html.= $html_attrs($Op[$ido]);
         unset($O[$ido]);
@@ -1689,11 +1691,11 @@ function sys_track_show($abbr,$day,$hour=-1) {
   foreach (array_keys($R) as $idr) {
     $ops= $html_ops($R[$idr]); 
     $rodina= $html_nazev('rodina',$idr); 
-    $html.= "<br>6 $ops $rodina";
+    $html.= "<br> $ops $rodina";
     $html.= $html_attrs($R[$idr]);
     foreach ($RO[$idr] as $ido) {
       $osoba= $html_nazev('osoba',$ido); 
-      $html.= "<br>7 . &nbsp; $osoba";
+      $html.= "<br> . &nbsp; $osoba";
       $html.= $html_attrs($O[$ido]);
       $html.= $html_attrs($Or[$ido]);
       unset($O[$ido]);
@@ -1709,8 +1711,10 @@ function sys_track_show($abbr,$day,$hour=-1) {
     $html.= $html_attrs($O[$ido]);
     unset($O[$ido]);
   }
-  debug($t,"$abbr $day $hour");
-  $title= "Úpravy provedené uživatelem $abbr dne $day ".($hour>=0 ? " v $hour hodin" : ''); 
-  return "<h3>$title</h3>$html";  
+//  debug($t,"$abbr $day $hour");                                                          /*DEBUG*/
+  $dne= substr(sql_date($day,0,'/'),0,-5);
+  $title= "Úpravy provedené uživatelem $abbr dne $dne ".($hour>=0 ? " v $hour hodin" : ''); 
+end:
+  return $test_only ? $jsou_zmeny : "<h3>$title</h3>".substr($html,4); 
 }
 
