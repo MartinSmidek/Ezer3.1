@@ -1531,10 +1531,11 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
   $PR= [];            // idp -> idr{0,1} 
   $RO= [];            // idr -> ido* ... ido může být vicekrát (člen více rodin)
   $PO= [];            // spolu: idp -> [op,ids,ido]* ... ido -"-
+  $LIMIT= $test_only ? "LIMIT 1" : 'ORDER BY kdy';
   $time_cond= $hour>=0 
-      ? "kdy BETWEEN '$day $hour:00:00' AND '$day $hour:59:59'" : "DATE(kdy)='$day'";
+      ? "kdy BETWEEN '$day $hour:00:00' AND '$day $hour:59:59'" : "LEFT(kdy,10)='$day'";
   $rt= pdo_qry("SELECT kdy,kde,klic,fld,op,old,val "
-      . "FROM _track WHERE kdo='$abbr' AND $time_cond ORDER BY kdy"); // od dávných k novým změnám
+      . "FROM _track WHERE kdo='$abbr' AND $time_cond $LIMIT"); // od dávných k novým změnám
   while ( $rt && list($kdy,$tab,$id,$fld,$op,$old,$val)= pdo_fetch_array($rt) ) {
     if (!isset($t->$tab[$id])) $t->$tab[$id]= [];
     if ($test_only) { $jsou_zmeny= 1; goto end; }
