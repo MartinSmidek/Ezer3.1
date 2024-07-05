@@ -1493,7 +1493,7 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
     foreach ($attrs as $atr=>$val) {
       if (in_array($atr,['id_akce','id_osoba'])) continue;
       if (in_array($atr,['i','u','x'])) { $prefix.= $atr; continue; }
-      $html.= " $atr=$val ";
+      $html.= $atr=='web_json' ? " $atr=..." : " $atr=$val ";
     }
     return $html;
   };

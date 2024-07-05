@@ -1018,6 +1018,12 @@ function sys_day_users($skip,$day,$parm) {  trace();
       $touch[$user][$hour]['touch'][$menu]= 1;
     $touch[$user][$hour]['touch'][$menu]+= $h;
   }
+  // doplníme WEB který není přihlášený
+  $rw= pdo_qry("SELECT HOUR(kdy) FROM _track WHERE DATE(kdy)='$day' AND kdo='WEB' GROUP BY HOUR(kdy)");
+  while ($rw && (list($hour)= pdo_fetch_array($rw))) {
+    $touch['WEB'][$hour]['touch']['web']= 1;    
+  }
+//  debug($touch,"=sys_day_users($skip,$day,...)");                                        /*DEBUG*/
   // použít tabulku barev, je-li v config
   $parm->day= $day;
   $html= sys_table($touch,$hours,$short==2?'speed':'user','#e7e7e7',true,$parm);
@@ -1082,7 +1088,14 @@ function sys_days_users($skip,$day0,$parm) {
         $touch[$user][$day]['touch'][$menu]= 1;
       $touch[$user][$day]['touch'][$menu]+= $h;
   }
-//                                                 debug($touch,'$touch');
+  // doplníme WEB který není přihlášený
+  $rw= pdo_qry("SELECT DATE(kdy) AS _day FROM _track 
+    WHERE DATE(kdy) BETWEEN '$day0'-INTERVAL $ndays DAY AND '$day0'  AND kdo='WEB' 
+    GROUP BY _day");
+  while ($rw && (list($day)= pdo_fetch_array($rw))) {
+    $touch['WEB'][$day]['touch']['web']= 1;    
+  }
+//  debug($touch,"=sys_days_users($skip,$day0,...)");                                        /*DEBUG*/
   // použít tabulku barev, je-li v config
   $html= sys_days_table($touch,$days,$short==2?'speed':'user','#e7e7e7',true,$parm);
   return $html;
