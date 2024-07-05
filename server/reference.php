@@ -1508,6 +1508,9 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
       case 'akce': 
         $nazev= select("nazev",'akce',"id_duakce='$id'"); 
         break;
+      case 'faktura': 
+        $nazev= select("nazev",'faktura',"id_faktura='$id'"); 
+        break;
       default: 
         $nazev= select("'&nbsp;'",$tab,"id_$tab='$id'"); 
         break;
@@ -1524,9 +1527,14 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
   };
   // shromáždění změn do paměti v tvaru tab -> id -> fld {kdy,val,op[,old]}
   $t= (object)[];
-  $A= $P= $R= $O= []; // id -> (i|u|d|fld)* ... pro O 
+  $A= $P= $R= $O= $F= []; // id -> (i|u|d|fld)* ... pro O  ... faktura
+//  $B= []; // id -> (i|u|d|fld)* ... pro platba tj. banka
   $Or= $Op= [];       // ... pro fld ze spolu a tvori
   $all_O= '';         // seznam ido
+//  $AF= [];            // ida -> idf ... faktura akce
+//  $PF= [];            // idp -> idf ... faktura pobytu
+//  $BF= [];            // idb -> idf ... platba faktury
+//  $BP= [];            // idb -> idp ... platby pobytu bez faktury
   $AP= [];            // ida -> idp*
   $PR= [];            // idp -> idr{0,1} 
   $RO= [];            // idr -> ido* ... ido může být vicekrát (člen více rodin)
@@ -1541,6 +1549,19 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
     if ($test_only) { $jsou_zmeny= 1; goto end; }
     $t->$tab[$id][$fld]= ['kdy'=>$kdy,'val'=>$val,'op'=>$op,'old'=>$old]; 
     // zapiš vlastnosti měněných atributů entit
+    if ($tab=='faktura')  {
+      if (!isset($F[$id])) $F[$id]= [];
+      if (!isset($F[$id][$op])) $F[$id][$op]= 1;
+      $F[$id][$fld]= $val;    
+//      list($ida,$idp)= select('IFNULL(id_akce,0),id_pobyt',
+//          'faktura LEFT JOIN objednavka USING (id_order)',"id_faktura='$id'"); 
+//      if ($idp) {
+//        if (!isset($PF[$idp]) || !in_array($id,$PF[$idp])) $PF[$idp][]= $id;
+//      }
+//      elseif ($ida) {
+//        if (!isset($AF[$ida]) || !in_array($id,$AF[$ida])) $AF[$ida][]= $id;
+//      }
+    }
     if ($tab=='osoba')  {
       if (!isset($O[$id])) $O[$id]= [];
       if (!isset($O[$id][$op])) $O[$id][$op]= 1;
@@ -1642,6 +1663,7 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
   // doplnění A podle P
 //  debug($A,'A 2'); debug($P,'P 2'); debug($R,'R 2'); debug($O,'O 2');                    /*DEBUG*/
 //  debug($AP,'AP 2'); debug($PR,'PR 2'); debug($PO,'PO 2'); debug($RO,'RO 2');            /*DEBUG*/
+//  debug($F,'F 2'); debug($AF,'AF 2'); debug($PF,'PF 2');                                 /*DEBUG*/
   // zobrazení 
   $html.= '';
   foreach (array_keys($A) as $ida) {
@@ -1654,6 +1676,13 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
       $pobyt= $html_nazev('pobyt',$idp); 
       $html.= "<br> . &nbsp; $ops $pobyt";
       $html.= $html_attrs($P[$idp]);
+//      // je faktura?
+//      if (($idf= $PF[$idp])) {
+//        $ops= $html_ops($F[$idf]); 
+//        $faktura= $html_nazev('faktura',$idf); 
+//        $html.= "<br> . &nbsp; . &nbsp; $ops $faktura";
+//        $html.= $html_attrs($F[$idf]);
+//      }
       // projdeme napřed rodinu tohoto pobytu
       if (($idr= $PR[$idp])) {
         $ops= $html_ops($R[$idr]); 
@@ -1708,9 +1737,16 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
   foreach (array_keys($O) as $ido) {
     $ops= $html_ops($O[$ido]); 
     $osoba= $html_nazev('osoba',$ido); 
-    $html.= "<br>8 $ops $osoba";
+    $html.= "<br> $ops $osoba";
     $html.= $html_attrs($O[$ido]);
     unset($O[$ido]);
+  }
+  foreach (array_keys($F) as $idf) {
+    $ops= $html_ops($F[$idf]); 
+    $faktura= $html_nazev('faktura',$idf); 
+    $html.= "<br> $ops $faktura";
+    $html.= $html_attrs($F[$idf]);
+    unset($F[$idf]);
   }
 //  debug($t,"$abbr $day $hour");                                                          /*DEBUG*/
   $dne= substr(sql_date($day,0,'/'),0,-5);
