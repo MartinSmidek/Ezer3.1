@@ -1498,6 +1498,8 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
     return $html;
   };
   $html_nazev= function($tab,$id) {
+    $nazev= '';
+    $style= $style_nazev= '';
     switch ($tab) {
       case 'osoba': 
         $nazev= '<b>'.select1("GROUP_CONCAT(prijmeni,' ',jmeno)",'osoba',"id_osoba='$id'").'</b>'; 
@@ -1507,6 +1509,7 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
         break;
       case 'akce': 
         $nazev= select("nazev",'akce',"id_duakce='$id'"); 
+        $style_nazev= "style='background:silver'";
         break;
       case 'faktura': 
         $nazev= select("nazev",'faktura',"id_faktura='$id'"); 
@@ -1515,9 +1518,9 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
         $nazev= select("'&nbsp;'",$tab,"id_$tab='$id'"); 
         break;
     }
-    $style= $nazev ? '' : "style='color:red;background:yellow'";
+    if (!$nazev) $style= "style='color:red;background:yellow'";
     $html= "<a $style href='ezer://syst.dat.tab_id_show/$tab/$id'>".strtoupper($tab[0]).$id."</a> "
-        . "<b>$nazev</b> ";
+        . "<b $style_nazev>$nazev</b> ";
     return $html;
   };
   $remove= function(&$arr,$val) { 
