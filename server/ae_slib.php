@@ -697,7 +697,7 @@ function query($qry,$db='.main.') {
 #   UPDATE tab SET f1=v1, f2=v2, ... WHERE id_tab=v0
 # kde vi jsou jednoduché hodnoty: číslo nebo string uzavřený v apostorfech 
 function query_track($qry) {
-  global $mysql_db_track, $mysql_tracked;
+  global $mysql_db_track, $mysql_tracked, $mysql_tracked_id;
   // rozklad výrazu: 1:table, 2:field list, 3:values list
   $res= 0;
   $m= null;
@@ -725,23 +725,26 @@ function query_track($qry) {
       $key_id= $m[4];
       $key_val= $m[5];
       // kontrola podmínky
-      $ok= ($tab=='akce' && $key_id=='id_duakce') || $key_id=="id_$tab";
+      $ok= $key_id=="id_$tab" || $key_id==$mysql_tracked_id[$tab];
       if ($ok) {
-        $chng= [];
+        global $USER;
         foreach ($sets as $set) {
           list($fld,$val)= explode('=',$set,2);
           $old= select($fld,$tab,"$key_id=$key_val");
-          $v= trim($val,"'");
-          $chng[]= (object)['fld'=>$fld,'op'=>'u','old'=>$old,'val'=>$v];
+          $old= pdo_real_escape_string($old);
+          if ($val[0]=="'") $val= substr($val,1,-1);
+          $val= pdo_real_escape_string($val);
+          query("INSERT INTO _track (kdy,kdo,kde,klic,op,fld,old,val) "
+              . "VALUE (NOW(),'$USER->abbr','$tab',$key_val,'u','$fld','$old','$val')");
         }
-        $res= ezer_qry("UPDATE",$tab,$key_val,$chng,$key_id);
+        $res= query($qry);
       }
     }
     elseif ($ok && $fce=='DELETE') {
       $key_id= $m[3];
       $key_val= $m[4];
       // kontrola podmínky
-      $ok= ($tab=='akce' && $key_id=='id_duakce') || $key_id=="id_$tab";
+      $ok= $key_id=="id_$tab" || $key_id==$mysql_tracked_id[$tab];
       if ($ok) {
         global $USER;
         query("INSERT INTO _track (kdy,kdo,kde,klic,op) "

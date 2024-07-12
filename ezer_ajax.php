@@ -58,7 +58,7 @@
   // ostatní parametry
   $tracking= '_track';
   $tracked= isset($tracked) ? "$tracked,_user," : ',_user,';
-  root_inc3($db,$dbs,$tracking,$tracked/*,$path_root,$path_pspad,$ezer_root*/);
+  root_inc3($db,$dbs,$tracking,$tracked,$tracked_id??[]);
 
   // PARAMETRY SPECIFICKÉ PRO APLIKACI
 
