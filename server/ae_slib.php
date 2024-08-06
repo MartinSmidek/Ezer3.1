@@ -693,7 +693,7 @@ function query($qry,$db='.main.') {
 }
 # -------------------------------------------------------------------------------------- query track
 # provede některá SQL včetně zápisu do _track
-#   INSERT INTO tab (f1,f2,...) VALUES (v1,v2,...) 
+#   INSERT INTO tab (f1,f2,...) VALUES (v1,v2,...) ... vrací ID nového záznamu
 #   UPDATE tab SET f1=v1, f2=v2, ... WHERE id_tab=v0
 # kde vi jsou jednoduché hodnoty: číslo nebo string uzavřený v apostorfech 
 # trasovaná tabulka musí být uvedena v $mysql_tracked, jeji klíč musí být buďto ve tvaru id_tab
@@ -726,6 +726,7 @@ function query_track($qry,$db='.main.') {
         pdo_query("INSERT INTO _track (kdy,kdo,kde,klic,op,fld,val) "
             . "VALUE (NOW(),'$abbr','$tab',$key_val,'i','$f',$v)",null,null,false,$db);
       }
+      $res= $key_val;
     }
     elseif ($ok && $fce=='UPDATE') {
   //    debug($m);
