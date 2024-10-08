@@ -773,7 +773,7 @@ __EOD;
 #   $tracked            -- tabulky s logovanými změnami (seznam zacina a konci carkou)
 # vstup/výstupní globální proměnné
 #   $ezer_system        -- jméno databáze s tabulkou _user
-function root_inc3($db,$dbs,$tracking,$tracked,$tracked_id=[]) { 
+function root_inc3($db,$dbs,$tracking,$tracked,$tracked_id=[],$tracked_view=[]) { 
 
   global // import
     $ezer_root, $EZER, $ezer_local, $ezer_server, $ezer_version;
@@ -786,7 +786,7 @@ function root_inc3($db,$dbs,$tracking,$tracked,$tracked_id=[]) {
     $ezer_path_code,$ezer_path_serv,$ezer_path_svn,$ezer_path_todo,$ezer_path_pspad,
     $mysql_db,$mysql_dbi,$ezer_db,$ezer_system,
     $ezer_mysql_cp,$ezer_html_cp,$ezer_sylk_cp,
-    $mysql_db_track,$mysql_tracked,$mysql_tracked_id;
+    $mysql_db_track,$mysql_tracked,$mysql_tracked_id,$mysql_tracked_view;
 
   // nastavení databází OBSOLETE
 //  $sada= is_null($ezer_local) ? $ezer_server : ($ezer_local ? 1 : 0);
@@ -805,6 +805,7 @@ function root_inc3($db,$dbs,$tracking,$tracked,$tracked_id=[]) {
   $mysql_db_track= $tracking;
   $mysql_tracked= $tracked;  // seznam začíná a končí čárkou
   $mysql_tracked_id= $tracked_id;  // atypické hlavní klíče (tedy ne id_$table) 
+  $mysql_tracked_view= $tracked_view;  // mapování view na tabulku
   // nastavení kódování
   $ezer_mysql_cp= 'UTF8';
   $ezer_html_cp=  'UTF-8';

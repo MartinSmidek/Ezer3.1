@@ -655,6 +655,7 @@ function sys_user_watch_css($opt) {
         $ret->sel_org.= ",{$opt->name->$i}:$i:$css";
       }
   }
+  debug($ret,'sys_user_watch_css');                                                     /*DEBUG*/
   return $ret;
 }
 # ---------------------------------------------------------------------------------- sys_skills_test

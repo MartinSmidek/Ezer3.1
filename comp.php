@@ -204,6 +204,7 @@
       $compiled= $name;
       $lst.= $trace;
       $lst.= $display;
+      $lst.= $err;
     }
   }
   // doplnění o výsledky kompilace

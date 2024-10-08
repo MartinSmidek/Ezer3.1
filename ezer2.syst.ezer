@@ -415,9 +415,9 @@ panel users [,,,543] {type:'right', title:'Uživatelé', _sys:'uzi', skill:'a|a'
     watch_css;
   }
   # kompozice obarvení z Ezer.options.watch_access_opt.css (je-li)
-  proc watch_css() { var opt:object
-    sys('options','watch_access_opt');
-    opt.set(ask('sys_user_watch_css',sys('options','watch_access_opt')));
+  func watch_css() { var opt:object
+    if (!sys('options','watch_access_opt')) return;
+    opt= php.sys_user_watch_css(sys('options','watch_access_opt'));
     uzivatele.lst.zkratka.set_attrib('css_cell',replace(opt.css_cell,'@','org'));
     uzivatele.lst.username.set_attrib('css_cell',replace(opt.css_cell,'@','access'));
     uzivatel.org.selects(opt.sel_org);
@@ -482,18 +482,19 @@ panel users [,,,543] {type:'right', title:'Uživatelé', _sys:'uzi', skill:'a|a'
         r0.width(70); r1.width(69); r2.width(69); rn.width(69);
         skills.width(0); org.width(0); access.width(0)
       }
-      proc onrowclick () {
-        new_skill.set('');
-        cmd.get.enable(0,'c');
-        uzivatel.load(user.get);
-        uzivatel.org.key(org.get);
-        uzivatel.access.key(access.get);
+      func onrowclick () {
+        new_skill= '';
+        cmd.enable(0,'c');
+        uzivatel.load(user);
+        watch_css();
+        uzivatel.org.key(org);
+        uzivatel.access.key(access);
         uzivatel.znacka.enable(0);
         // zobrazení v seznamu vlastností jako vybraných
-        dskill.missing.set(ask('sys_skills_test',uzivatel.skills.get));
-        dskill.seznam.selected('set',ask('sys_skills2ids',uzivatel.skills.get));
-        dskill.seznam.selected(sel.get);
-        dskill.seznam.browse_load;
+        dskill.missing= php.sys_skills_test(uzivatel.skills);
+        dskill.seznam.selected('set',php.sys_skills2ids(uzivatel.skills));
+        dskill.seznam.selected(sel);
+        dskill.seznam.browse_load();
       }
     }
   }
