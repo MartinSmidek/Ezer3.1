@@ -390,7 +390,7 @@ function comp_application($root,&$state,$errs=false,$all=false) {
   foreach($files as $name=>$status) {
     if ( $all || $status=='old' || ($errs && $status=='err') ) {
       $trace= '';
-      $state= comp_file($name,$root,'',true).'<hr />';
+      $state.= comp_file($name,$root,'',true).'<hr />';
       display($state);
       $txt.= $trace;
 //                                         if ( substr($state,0,2)=='ko' ) break;
