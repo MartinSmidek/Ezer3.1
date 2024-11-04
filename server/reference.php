@@ -1499,20 +1499,30 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
   };
   $html_nazev= function($tab,$id) {
     $nazev= '';
+    $ref= ''; // odkaz do Answeru
     $style= $style_nazev= '';
     switch ($tab) {
       case 'osoba': 
         $nazev= '<b>'.select1("GROUP_CONCAT(prijmeni,' ',jmeno)",'osoba',"id_osoba='$id'").'</b>'; 
+        if ( function_exists('tisk2_ukaz_osobu')) {
+          $ref= tisk2_ukaz_osobu($id,'','','^O'); 
+        }
         break;
       case 'rodina': 
         $nazev= select("nazev",'rodina',"id_rodina='$id'"); 
+        if ( function_exists('tisk2_ukaz_rodinu')) {
+          $ref= tisk2_ukaz_rodinu($id,'','','^R'); 
+        }
         break;
       case 'pobyt': 
         $nazev= ' ';
-        $r= select("i0_rodina",'pobyt',"id_pobyt='$id'"); 
-        if (!$r) {
+        list($ida,$idr)= select("id_akce,i0_rodina",'pobyt',"id_pobyt='$id'"); 
+        if (!$idr) {
           $nazev= select("GROUP_CONCAT(DISTINCT prijmeni)",'osoba JOIN spolu USING (id_osoba)',
             "id_pobyt='$id'");
+        }
+        if ( function_exists('tisk2_ukaz_pobyt_akce')) {
+          $ref= tisk2_ukaz_pobyt_akce($id,$ida,'','','^P'); 
         }
         break;
       case 'akce': 
@@ -1531,8 +1541,11 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
     }
     if (!$nazev) 
       $style= "style='color:red;background:yellow'";
-    $html= "<a $style href='ezer://syst.dat.tab_id_show/$tab/$id'>".strtoupper($tab[0]).$id."</a> "
-        . "<b $style_nazev>$nazev</b> ";
+    $html= $ref
+        ? "$ref-<a $style href='ezer://syst.dat.tab_id_show/$tab/$id'>$id</a> "
+          . "<b $style_nazev>$nazev</b> "
+        : "<a $style href='ezer://syst.dat.tab_id_show/$tab/$id'>".strtoupper($tab[0]).$id."</a> "
+          . "<b $style_nazev>$nazev</b> ";
     return $html;
   };
   $remove= function(&$arr,$val) { 
