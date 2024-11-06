@@ -1528,6 +1528,9 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
       case 'akce': 
         $nazev= select("nazev",'akce',"id_duakce='$id'"); 
         $style_nazev= "style='background:silver'";
+        if ( function_exists('tisk2_ukaz_akci')) {
+          $ref= tisk2_ukaz_akci($id,'','','^A'); 
+        }
         break;
       case 'faktura': 
         $nazev= select("nazev",'faktura',"id_faktura='$id'"); 
