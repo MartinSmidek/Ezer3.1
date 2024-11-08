@@ -1481,12 +1481,19 @@ function sys_db_rec_show($tab,$key,$idt) {
 # výpis je optimalizovaný pro datový model ezer_db2 ale použitelný obecně pro databáze ezer_
 function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
   $jsou_zmeny= 0;
-  $html_ops= function($attrs) {
-    $prefix= '';
+  $html_ops= function($attrs,$clr='') {
+    $prefix= $clr_prefix= '';
     foreach (array_keys($attrs) as $atr) {
-      if (in_array($atr,['i','u','x'])) $prefix.= $atr; 
+      if (in_array($atr,['i','u','x'])) {
+        if ($clr && $atr=='i') {
+          $clr_prefix=  "&nbsp;<b style='color:white;background:$clr'>&nbsp;i </b>&nbsp;"; 
+        }
+        else 
+          $prefix.= $atr; 
+      }
     }
-    return $prefix ? "&nbsp;<b style='color:white;background:black'>&nbsp;$prefix </b>&nbsp;" : '-';
+    $prefix= $prefix ? "&nbsp;<b style='color:white;background:black'>&nbsp;$prefix </b>&nbsp;" : '';
+    return $prefix.$clr_prefix ?: '-';
   };
   $html_attrs= function($attrs) {
     $html= '';
@@ -1773,7 +1780,7 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
     }
     // je faktura za akci?
     foreach ($AF[$ida] as $idf) {
-      $ops= $html_ops($F[$idf]); 
+      $ops= $html_ops($F[$idf],'green'); 
       $faktura= $html_nazev('faktura',$idf); 
       $html.= "<br> . &nbsp;  $ops $faktura";
       $html.= $html_attrs($F[$idf]);
@@ -1795,7 +1802,7 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
       $html.= $html_attrs($P[$idp]);
       // je faktura za pobyt?
       if (($idf= $PF[$ida])) {
-        $ops= $html_ops($F[$idf]); 
+        $ops= $html_ops($F[$idf],'green'); 
         $faktura= $html_nazev('faktura',$idf); 
         $html.= "<br> . &nbsp; . &nbsp;  $ops $faktura";
         $html.= $html_attrs($F[$idf]);
@@ -1803,7 +1810,7 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
       }
       // projdeme napřed rodinu tohoto pobytu
       if (($idr= $PR[$idp])) {
-        $ops= $html_ops($R[$idr]); 
+        $ops= $html_ops($R[$idr],'red'); 
         $rodina= $html_nazev('rodina',$idr); 
         $html.= "<br> . &nbsp; . &nbsp; $ops $rodina";
         $html.= $html_attrs($R[$idr]);
@@ -1813,7 +1820,7 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
             $ids= $op_ids_ido[1];
             $op= $op_ids_ido[0];
             $ops_s= "&nbsp;<b style='color:white;background:black'>&nbsp;$op </b>&nbsp;";
-            $ops_o= $html_ops($O[$ido]); 
+            $ops_o= $html_ops($O[$ido],'red'); 
             $osoba= $html_nazev('osoba',$ido); 
             $spolu= $html_nazev('spolu',$ids); 
             $html.= "<br> . &nbsp; . &nbsp; . &nbsp; $ops_s $spolu $ops_o $osoba";
@@ -1830,7 +1837,7 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
       foreach ($PO[$idp] as list($op,$ids,$ido)) {
         if (!isset($O[$ido])) continue;
         $ops_s= "&nbsp;<b style='color:white;background:black'>&nbsp;$op </b>&nbsp;";
-        $ops_o= $html_ops($O[$ido]); 
+        $ops_o= $html_ops($O[$ido],'red'); 
         $osoba= $html_nazev('osoba',$ido); 
         $spolu= $html_nazev('spolu',$ids); 
         $html.= "<br> . &nbsp; . &nbsp; $ops_s $spolu $ops_o $osoba";
@@ -1841,7 +1848,7 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
       unset($PO[$idp]);
       // případná faktura za pobyt
       if (($idf= $PF[$idp]??0)) {
-        $ops= $html_ops($F[$idf]); 
+        $ops= $html_ops($F[$idf],'green'); 
         $faktura= $html_nazev('faktura',$idf); 
         $html.= "<br> . &nbsp; . &nbsp;  $ops $faktura";
         $html.= $html_attrs($F[$idf]);
@@ -1860,7 +1867,7 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
   }
   // změny rodin a jejich členů mimo akce
   foreach (array_keys($R) as $idr) {
-    $ops= $html_ops($R[$idr]); 
+    $ops= $html_ops($R[$idr],'red'); 
     $rodina= $html_nazev('rodina',$idr); 
     $html.= "<br> $ops $rodina";
     $html.= $html_attrs($R[$idr]);
@@ -1876,14 +1883,14 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
   unset($R);
   // změny osob mimo akce a rodiny
   foreach (array_keys($O) as $ido) {
-    $ops= $html_ops($O[$ido]); 
+    $ops= $html_ops($O[$ido],'red'); 
     $osoba= $html_nazev('osoba',$ido); 
     $html.= "<br>* $ops $osoba";
     $html.= $html_attrs($O[$ido]);
     unset($O[$ido]);
   }
   foreach (array_keys($F) as $idf) {
-    $ops= $html_ops($F[$idf]); 
+    $ops= $html_ops($F[$idf],'green'); 
     $faktura= $html_nazev('faktura',$idf); 
     $html.= "<br>* $ops $faktura";
     $html.= $html_attrs($F[$idf]);
