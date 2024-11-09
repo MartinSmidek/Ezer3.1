@@ -1484,9 +1484,12 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
   $html_ops= function($attrs,$clr='') {
     $prefix= $clr_prefix= '';
     foreach (array_keys($attrs) as $atr) {
-      if (in_array($atr,['i','u','x'])) {
-        if ($clr && $atr=='i') {
-          $clr_prefix=  "&nbsp;<b style='color:white;background:$clr'>&nbsp;i </b>&nbsp;"; 
+      if (in_array($atr,['I','i','u','x'])) {
+        if ($clr && $atr=='I') {
+          $clr_prefix=  "&nbsp;<b style='color:white;background:$clr'>&nbsp;&nbsp;+&nbsp;&nbsp;</b>&nbsp;"; 
+        }
+        elseif ($clr && $atr=='i') {
+          $clr_prefix=  "&nbsp;<b style='color:white;background:$clr'>&nbsp;$atr </b>&nbsp;"; 
         }
         else 
           $prefix.= $atr; 

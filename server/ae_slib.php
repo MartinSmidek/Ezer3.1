@@ -724,7 +724,7 @@ function query_track($qry,$db='.main.') {
 //        if ($v[0]=="'") $v= substr($v,1,-1);
 //        $v= pdo_real_escape_string($v);
         pdo_query("INSERT INTO _track (kdy,kdo,kde,klic,op,fld,val) "
-            . "VALUE (NOW(),'$abbr','$tab',$key_val,'i','$f',$v)",null,null,false,$db);
+            . "VALUE (NOW(),'$abbr','$tab',$key_val,'I','$f',$v)",null,null,false,$db);
       }
       $res= $key_val;
     }
@@ -2277,6 +2277,7 @@ function ezer_qry ($op,$table,$cond_key,$zmeny,$key_id='') {
     $tracked[0]= array();
     if ( $zmeny ) {
       foreach ($zmeny as $zmena) {
+        $zmena->op= 'I';
         $fld= $zmena->fld;
         if ( $fld!='zmena_kdo' && $fld!='zmena_kdy' ) $tracked[0][]= $zmena;
         if ( $fld=='id_cis' ) $id_cis= $zmena->val;
