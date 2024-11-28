@@ -366,8 +366,9 @@ div.MenuGroup3 li.disabled3:hover { background-color:#777; }
 div.MenuGroup3 i.fa-red { color:red }
 div.MenuGroup3 .disabled3 i.fa-red { color:grey }
 div.MenuGroup3 i.fa-darkviolet { color:darkviolet }
-div.MenuGroup3 .disabled3 i.fa-darkviolet { color:grey 
-}
+div.MenuGroup3 .disabled3 i.fa-darkviolet { color:grey }
+div.MenuGroup3 i.fa-green { color:green }
+div.MenuGroup3 .disabled3 i.fa-green { color:grey }
 
 /* -------------------------------------------------------------------------------==> MenuContext */
 
@@ -383,8 +384,9 @@ div.MenuGroup3 .disabled3 i.fa-darkviolet { color:grey
 .ContextMenu3 i.fa-red { color:red }
 .ContextMenu3 .disabled3 i.fa-red { color:grey }
 .ContextMenu3 .fa-fw { width: 17px; text-align: left; }
-.ContextFocus3 { background-color:#ffa !important;
-}
+.ContextFocus3 { background-color:#ffa !important; }
+.ContextMenu3 i.fa-green { color:green }
+.ContextMenu3 .disabled3 i.fa-green { color:grey }
 
 /* --------------------------------------------------------------------------------------==> Form */
 
@@ -446,6 +448,8 @@ div.LabelDrop3 .ContextFocus3 {
   font-family:FontAwesome,sans-serif !important; }
 .Button3 i.fa-red, a i.fa-red  { color:red }
 button.Button3:disabled3 i.fa-red { color:grey }
+.Button3 i.fa-green, a i.fa-green  { color:green }
+button.Button3:disabled3 i.fa-green { color:grey }
     
 /* korekce Mozilla */
 @-moz-document url-prefix() {
