@@ -296,7 +296,7 @@ function doc_ezer_list() { trace();
 //  $TEST= 'tut.cmp';
   // projití složek aplikace
   $files= array();
-  foreach ($dbg_info->src_path as $root) {
+  foreach ($dbg_info->src_path??[] as $root) {
     $path_appl= "$ezer_path_root/$root";
     $path_code= "$ezer_path_root/$root/code$ezer_version";
     if (($dh= opendir($path_appl))) {
