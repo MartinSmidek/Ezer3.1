@@ -3528,7 +3528,7 @@ Ezer.fce.copy_by_name= function (x,y,delimiters,par4) {
           }
         }
         else if ( field.set ) {
-          field.set(x[id],value);
+          field.set(value);
         }
       }
     }
