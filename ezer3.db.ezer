@@ -43,10 +43,10 @@ menu mdb {type:'left', active:*, format:'f+'
     item {title:'[fa-question] zobrazení záznamů'
       func onclick (i:ezer) { 
         clear(); info.header(i); info.display(1,'t');
-        if (!info.tab) {
+//        if (!info.tab) {
           info.tab.selects(php.sys_db_selects());
           info.tab.key(1);
-        }
+//        }
       }
     }
   }

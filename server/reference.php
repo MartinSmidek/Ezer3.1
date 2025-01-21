@@ -1511,7 +1511,16 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
     $nazev= '';
     $ref= ''; // odkaz do Answeru
     $style= $style_nazev= '';
+    $letter= strtoupper($tab[0]);
     switch ($tab) {
+      case 'prihlaska': 
+        list($ida,$idp,$nazev)= select("id_akce,id_pobyt,email",'prihlaska',"id_prihlaska='$id'"); 
+        $letter= 'W';
+        $style_nazev= "style='background:silver'";
+        if ( function_exists('tisk2_ukaz_prihlasku')) {
+          $ref= tisk2_ukaz_prihlasku($id,$ida,$idp,'','','^W'); 
+        }
+        break;
       case 'osoba': 
         $nazev= '<b>'.select1("GROUP_CONCAT(prijmeni,' ',jmeno)",'osoba',"id_osoba='$id'").'</b>'; 
         if ( function_exists('tisk2_ukaz_osobu')) {
@@ -1557,7 +1566,7 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
     $html= $ref
         ? "$ref-<a $style href='ezer://syst.dat.tab_id_show/$tab/$id'>$id</a> "
           . "<b $style_nazev>$nazev</b> "
-        : "<a $style href='ezer://syst.dat.tab_id_show/$tab/$id'>".strtoupper($tab[0]).$id."</a> "
+        : "<a $style href='ezer://syst.dat.tab_id_show/$tab/$id'>$letter$id</a> "
           . "<b $style_nazev>$nazev</b> ";
     return $html;
   };
@@ -1568,15 +1577,17 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
   };
   // shromáždění změn do paměti v tvaru tab -> id -> fld {kdy,val,op[,old]}
   $t= (object)[];
-  $A= $D= $P= $R= $O= $F= []; // id -> (i|u|d|fld)* ... pro O  ... faktura ... D=...ds_order
+  $W= $A= $D= $P= $R= $O= $F= []; // id -> (i|u|d|fld)* ... pro O  ... faktura ... D=...ds_order
   $B= []; // id -> (i|u|d|fld)* ... pro platba tj. banka
   $Or= $Op= [];       // ... pro fld ze spolu a tvori
   $all_O= '';         // seznam ido
   $AF= [];            // ida -> idf ... faktura za akci/objednávku
   $AD= [];            // ida -> idd ... objednávka svázaná s akcí
   $PF= [];            // idp -> idf ... faktura za pobyt
+  $PW= [];            // idp -> idw ... přihláška na pobyt
   $FB= [];            // idf -> idb ... platba faktury
 //  $BP= [];            // idb -> idp ... platby pobytu bez faktury
+  $AW= [];            // ida -> idw* (možná ještě bez pobytu)
   $AP= [];            // ida -> idp*
   $PR= [];            // idp -> idr{0,1} 
   $RO= [];            // idr -> ido* ... ido může být vicekrát (člen více rodin)
@@ -1591,18 +1602,17 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
     if ($test_only) { $jsou_zmeny= 1; goto end; }
     $t->$tab[$id][$fld]= ['kdy'=>$kdy,'val'=>$val,'op'=>$op,'old'=>$old]; 
     // zapiš vlastnosti měněných atributů entit
+    if ($tab=='prihlaska') {  
+      $ida= $fld=='id_akce' ? $val : 0;
+      $idp= select('id_pobyt','prihlaska',"id_prihlaska=$id");
+      if ($ida && !isset($A[$ida])) $A[$ida]= [];
+      if ($idp && (!isset($PW[$idp]) || !in_array($id,$PW[$idp]))) $PW[$idp][]= $id;
+      elseif (!isset($AW[$ida]) || !in_array($id,$AW[$ida])) $AW[$ida][]= $id;
+    }
     if ($tab=='faktura')  {
       if (!isset($F[$id])) $F[$id]= [];
       if (!isset($F[$id][$op])) $F[$id][$op]= 1;
       $F[$id][$fld]= $val;    
-//      list($ida,$idp)= select('IFNULL(id_akce,0),id_pobyt',
-//          'faktura LEFT JOIN ds_order USING (id_order)',"id_faktura='$id'"); 
-//      if ($idp) {
-//        $PF[$idp]= $id;
-//      }
-//      elseif ($ida) {
-//        if (!isset($AF[$ida]) || !in_array($id,$AF[$ida])) $AF[$ida][]= $id;
-//      }
     }
     if ($tab=='osoba')  {
       if (!isset($O[$id])) $O[$id]= [];
@@ -1764,9 +1774,10 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
   
   // doplnění A podle P
 //  debug($A,'A 2'); debug($P,'P 2'); debug($R,'R 2'); debug($O,'O 2');                    /*DEBUG*/
-  debug($AP,'AP 2'); debug($PR,'PR 2'); debug($PO,'PO 2'); debug($RO,'RO 2');            /*DEBUG*/
-  debug($F,'F 2'); debug($AF,'AF 2'); debug($PF,'PF 2'); debug($FB,'FB 2'); debug($B,'B 2');/*DEBUG*/
-  debug($A,'A 2'); debug($D,'D 2'); debug($AD,'AD 2');                                     /*DEBUG*/
+  debug($W,'W 2'); debug($AW,'AW 2'); debug($AP,'AP 2'); debug($PW,'PW 2'); 
+//  debug($AP,'AP 2'); debug($PR,'PR 2'); debug($PO,'PO 2'); debug($RO,'RO 2');            /*DEBUG*/
+//  debug($F,'F 2'); debug($AF,'AF 2'); debug($PF,'PF 2'); debug($FB,'FB 2'); debug($B,'B 2');/*DEBUG*/
+//  debug($A,'A 2'); debug($D,'D 2'); debug($AD,'AD 2');                                     /*DEBUG*/
   // zobrazení 
   $html.= '';
   // projdeme akce 
@@ -1803,8 +1814,17 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
       $pobyt= $html_nazev('pobyt',$idp); 
       $html.= "<br> . &nbsp; $ops $pobyt";
       $html.= $html_attrs($P[$idp]);
+      // je online přihláška?
+      foreach ($PW[$idp] as $idw) {
+        $ops= $html_ops($W[$idw],'green'); 
+        $prihlaska= $html_nazev('prihlaska',$idw); 
+        $html.= "<br> . &nbsp; . &nbsp;  $ops $prihlaska";
+        $html.= $html_attrs($W[$idw]);
+        unset($W[$idw]);
+      }
+      unset($PW[$idp]);
       // je faktura za pobyt?
-      if (($idf= $PF[$ida])) {
+      if (($idf= $PF[$idp])) {
         $ops= $html_ops($F[$idf],'green'); 
         $faktura= $html_nazev('faktura',$idf); 
         $html.= "<br> . &nbsp; . &nbsp;  $ops $faktura";
@@ -1867,6 +1887,14 @@ function sys_track_show($abbr,$day,$hour=-1,$test_only=0) { //trace();
       }
     }
     unset($AP[$ida]);
+    // je rozpracovaná online přihláška na akci bez uloženého pobytu?
+    foreach ($AW[$ida] as $idw) {
+      $ops= $html_ops($W[$idw],'red'); 
+      $prihlaska= $html_nazev('prihlaska',$idw); 
+      $html.= "<br> . &nbsp; . &nbsp;  $ops $prihlaska";
+      $html.= $html_attrs($W[$idw]);
+      unset($W[$idw]);
+    }
   }
   // změny rodin a jejich členů mimo akce
   foreach (array_keys($R) as $idr) {
