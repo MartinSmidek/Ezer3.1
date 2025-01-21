@@ -610,6 +610,8 @@ function sys_user_unique($id_user,$username,$abbr) {
 # zkontroluje, zda jsou korektní položky org,access vůči sobě a vůči watch_access
 function sys_user_access($watch_access,$org,$access) {
   global $EZER;
+  $watch_access= 0+$watch_access;
+  $access= 0+$access;
   $msg= '';
   $orgs= array(0,1,2,4,8,16,32,64,128,256,512,1024);
   if ( !in_array($org,$orgs) ) $msg.= " org musí být mocnina 2 nebo 0; ";
