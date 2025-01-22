@@ -39,7 +39,7 @@ func tab_track_show(dnu,tab,tid) {
 }
 use info: form right [12,4,,] 
 menu mdb {type:'left', active:*, format:'f+'
-  menu  {title:'Zobrazení dat aplikace', type:'group', skill:'m'
+  menu  {title:'Zobrazení dat aplikace', type:'group', skill:'m;mm'
     item {title:'[fa-question] zobrazení záznamů'
       func onclick (i:ezer) { 
         clear(); info.header(i); info.display(1,'t');
@@ -96,14 +96,14 @@ form right [,,*,50] {
     clear_stick();
     note= conc(note,n);
   }
-  select tab [-253,5,150,] {tag:'t', title:'tabulka', css:'v_karte', format:'t', skill:'m|m'}
-  field idt [-152,5,70,] {tag:'t', title:'klíč', css:'v_karte', format:'t', skill:'m|m'}
-  button go [-82,5,,] {tag:'t', title:'zobraz', skill:'m|m'
+  select tab [-253,5,150,] {tag:'t', title:'tabulka', css:'v_karte', format:'t', skill:'m|m;mm|mm'}
+  field idt [-152,5,70,] {tag:'t', title:'klíč', css:'v_karte', format:'t', skill:'m|m;mm|mm'}
+  button go [-82,5,,] {tag:'t', title:'zobraz', skill:'m|m;mm|mm'
     func onclick() {
       clear(); form.note= conc(form.note,
           php.sys_db_append(tab,idt ? `*='${idt}'`:'TRUE')); // * bude primary_key
   }}
-  button [-22,5,,] {tag:'t', title:'vymaž', skill:'m|m'
+  button [-22,5,,] {tag:'t', title:'vymaž', skill:'m|m;mm|mm'
     func onclick() { clear(); form.note= ''; form.clear_stick();
   }}
 }
